@@ -102,13 +102,13 @@ typedef struct Token {
 #define CHARSEOF255 0xFF
 
 /*  Special case tokens processed separately one by one in the token-driven part of the scanner
- *  '=' , ' ' , '(' , ')' , '{' , '}' , == , <> , '>' , '<' , ';', 
- *  white space, #comment\n , ',' , ';' , '-' , '+' , '*' , '/', # , 
+ *  '=' , ' ' , '(' , ')' , '{' , '}' , == , <> , '>' , '<' , ';',
+ *  white space, #comment\n , ',' , ';' , '-' , '+' , '*' , '/', # ,
  *  .&., .|. , .!. , SEOF.
  */
 
-/* TO_DO: Define lexeme FIXED classes */
-/* These constants will be used on nextClass */
+ /* TO_DO: Define lexeme FIXED classes */
+ /* These constants will be used on nextClass */
 #define CHRCOL2 '('
 #define CHRCOL3 '"'
 #define CHRCOL4 '_'
@@ -150,18 +150,20 @@ static jer_intg transitionTable[][TABLE_COLUMNS] = {
 #define FSWR	2		/* accepting state with retract */
 
 /* TO_DO: Define list of acceptable states */
-static jer_intg stateType[] = {
-	NOFS, /* 00 */
+static jer_intg stateType[] =
+{
+    NOFS, /* 00 */
 	NOFS, /* 01 */
-	FSNR, /* 02 (MVID) - Methods */
+	FSNR, /* 02 (MID) - Methods */
 	FSWR, /* 03 (KEY) */
 	NOFS, /* 04 */
 	FSNR, /* 05 (SL) */
 	NOFS, /* 06 */
-	FSNR, /* 07 (IL) */
+	FSWR, /* 07 (IL) */
 	NOFS, /* 08 */
-	NOFS, /* 09 */
-	FSWR  /* 10 (FL) */
+	FSNR, /* 09 (FL) */
+	FSNR, /* 10 (Err1 - no retract) */
+	FSWR  /* 11 (Err2 - retract) */
 };
 
 /*
@@ -185,18 +187,18 @@ Automata definitions
 typedef Token(*PTR_ACCFUN)(jer_char* lexeme);
 
 /* Declare accepting states functions */
-Token funcSL	(jer_char lexeme[]);
-Token funcID	(jer_char lexeme[]);
-Token funcKEY	(jer_char lexeme[]);
-Token funcIL	(jer_char lexeme[]);
-Token funcFL	(jer_char lexeme[]);
-Token funcErr	(jer_char lexeme[]);
-/* 
- * Accepting function (action) callback table (array) definition 
+Token funcSL(jer_char lexeme[]);
+Token funcID(jer_char lexeme[]);
+Token funcKEY(jer_char lexeme[]);
+Token funcIL(jer_char lexeme[]);
+Token funcFL(jer_char lexeme[]);
+Token funcErr(jer_char lexeme[]);
+/*
+ * Accepting function (action) callback table (array) definition
  * If you do not want to use the typedef, the equvalent declaration is:
  */
 
-/* TO_DO: Define final state table */
+ /* TO_DO: Define final state table */
 static PTR_ACCFUN finalStateTable[] = {
 	NULL,		/* -    [00] */
 	NULL,		/* -    [01] */
@@ -265,7 +267,7 @@ static jer_char* keywordTable[KWT_SIZE] = {
 
 #define INDENT '\t'  /* Tabulation */
 
-/* TO_DO: Should be used if no symbol table is implemented */
+ /* TO_DO: Should be used if no symbol table is implemented */
 typedef struct languageAttributes {
 	jer_char indentationCharType;
 	jer_intg indentationCurrentPos;
