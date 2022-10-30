@@ -127,19 +127,21 @@ typedef struct Token {
 
 /* TO_DO: Transition table - type of states defined in separate table */
 static jer_intg transitionTable[][TABLE_COLUMNS] = {
-/*   [A-z] , [0-9],    _,    &,    ", SEOF, other
-	   L(0),  D(1), U(2), M(3), Q(4), E(5),  O(6) */
-	{     1,     6, ESNR, ESNR,    4, ESNR, ESNR}, // S0: NOAS
-	{     1,     1,    1,    2,    3,    3,    3}, // S1: NOAS
-	{    FS,    FS,   FS,   FS,   FS,   FS,   FS}, // S2: ASNR (MVID)
-	{    FS,    FS,   FS,   FS,   FS,   FS,   FS}, // S3: ASWR (KEY)
-	{     4,     4,    4,    4,    5,    4,    4}, // S4: NOAS
-	{    FS,    FS,   FS,   FS,   FS,   FS,   FS}, // S5: ASNR (SL)
-	{	  7,	 6,	   7,	 7,	   7,    8,    7}, // S6: NOAS
-	{    FS,    FS,   FS,   FS,   FS,   FS,   FS}, // S7: ASNR (IL)
-	{  ESNR,	 9, ESNR, ESNR, ESNR, ESNR, ESNR}, // S8: NOAS	
-	{    10,     9,   10,   10,   10,   10,   10}, // S9: NOAS
-	{    FS,    FS,   FS,   FS,   FS,   FS,   FS}  // S10: ASWR (FL)
+	/*         [A-z], [0-9],    _,    (,    ", 	   .,    SEOF,      other               */
+	/*          L(0),  D(1), U(2), M(3), Q(4),  P(.),    E(5),       O(6)               */
+	/* S00 */ {     1,    6, ESNR, ESNR,    4,  ESNR,	 ESWR,     ESNR}, /* NOAS        */
+	/* S01 */ {     1,    1,    1,    2,    3,     3,	 ESWR,	      3}, /* NOAS        */
+	/* S02 */ {    FS,   FS,   FS,   FS,   FS,    FS,	   FS,       FS}, /* ASNR (MNID) */
+	/* S03 */ {    FS,   FS,   FS,   FS,   FS,    FS,	   FS,       FS}, /* ASWR (KEY)  */
+	/* S04 */ {     4,    4,    4,    4,    5,     4,	 ESWR,        4}, /* NOAS        */
+	/* S05 */ {    FS,   FS,   FS,   FS,   FS,    FS,	   FS,       FS}, /* ASNR (SL)   */
+	/* S06 */ {     7,    6,    7 ,    7,   7,     8,	 ESWR,        7}, /* NOAS        */
+	/* S07 */ {    FS,   FS,   FS,   FS,   FS,    FS,	   FS,       FS}, /* ASWR (IL)   */
+	/* S08 */ {    10,    9,   10,   10,   10,    10,	 ESWR,       10}, /* NOAS        */
+	/* S09 */ {    FS,   FS,   FS,   FS,   FS,    FS,	   FS,       FS}, /* ASWR (FL)   */
+	/* S10 */ {    FS,   FS,   FS,   FS,   FS,    FS,	   FS,       FS}, /* ASWR (ES)   */
+	/* S11 */ {    FS,   FS,   FS,   FS,   FS,    FS,	   FS,       FS}, /* ASWR (ER)   */
+
 };
 
 /* Define accepting states types */
