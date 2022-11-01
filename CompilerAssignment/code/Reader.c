@@ -456,9 +456,7 @@ jer_boln readerRetract(ReaderPointer const readerPointer) {
 		return JER_FALSE;
 	}
 	/* TO_DO: Retract (return 1 pos read) */
-	while (readerPointer->content != NULL) {
-		readerPointer;
-	}
+	readerPointer->position.read--;
 	return JER_TRUE;
 }
 
@@ -484,8 +482,8 @@ jer_boln readerRestore(ReaderPointer const readerPointer) {
 		return JER_FALSE;
 	}
 	/* TO_DO: Restore positions (read/mark) */
-	readerPointer->position.read;
-	readerPointer->position.mark;
+	readerPointer->position.read = NULL;
+	readerPointer->position.mark = NULL;
 
 	return JER_TRUE;
 }

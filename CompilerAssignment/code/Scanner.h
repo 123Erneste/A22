@@ -109,26 +109,26 @@ typedef struct Token {
 
  /* TO_DO: Define lexeme FIXED classes */
  /* These constants will be used on nextClass */
-#define CHRCOL2 '('
-#define CHRCOL3 '"'
-#define CHRCOL4 '_'
+#define CHRCOL2 '_'
+#define CHRCOL3 '('
+#define CHRCOL4 '\"'
 #define CHRCOL5 '.'
 
 /* These constants will be used on VID / MID function */
 #define MNIDPREFIX '('
 
 /* TO_DO: Error states and illegal state */
-#define FS		100		/* Illegal state */
+#define FS		100		/* Illegal state / Final state */
 #define ESWR	101		/* Error state with retract */
 #define ESNR	102		/* Error state with no retract */
 
  /* TO_DO: State transition table definition */
 #define TABLE_COLUMNS 8
 
-/* TO_DO: Transition table - type of states defined in separate table */
+/* DONE: Transition table - type of states defined in separate table */
 static jer_intg transitionTable[][TABLE_COLUMNS] = {
 	/*         [A-z], [0-9],    _,    (,    ", 	   .,    SEOF,      other               */
-	/*          L(0),  D(1), U(2), M(3), Q(4),  P(.),    E(5),       O(6)               */
+	/*          L(0),  D(1), U(2), M(3), Q(4),  P(5),    E(6),       O(7)               */
 	/* S00 */ {     1,    6, ESNR, ESNR,    4,  ESNR,	 ESWR,     ESNR}, /* NOAS        */
 	/* S01 */ {     1,    1,    1,    2,    3,     3,	 ESWR,	      3}, /* NOAS        */
 	/* S02 */ {    FS,   FS,   FS,   FS,   FS,    FS,	   FS,       FS}, /* ASNR (MNID) */
@@ -149,7 +149,7 @@ static jer_intg transitionTable[][TABLE_COLUMNS] = {
 #define FSNR	1		/* accepting state with no retract */
 #define FSWR	2		/* accepting state with retract */
 
-/* TO_DO: Define list of acceptable states */
+/* DONE: Define list of acceptable states */
 static jer_intg stateType[] =
 {
     NOFS, /* 00 */
@@ -191,14 +191,14 @@ Token funcSL(jer_char lexeme[]);
 Token funcID(jer_char lexeme[]);
 Token funcKEY(jer_char lexeme[]);
 Token funcIL(jer_char lexeme[]);
-Token funcFL(jer_char lexeme[]);
+//Token funcFL(jer_char lexeme[]);
 Token funcErr(jer_char lexeme[]);
 /*
  * Accepting function (action) callback table (array) definition
  * If you do not want to use the typedef, the equvalent declaration is:
  */
 
- /* TO_DO: Define final state table */
+ /* DONE: Define final state table */
 static PTR_ACCFUN finalStateTable[] = {
 	NULL,		/* -    [00] */
 	NULL,		/* -    [01] */
@@ -209,8 +209,8 @@ static PTR_ACCFUN finalStateTable[] = {
 	NULL,		/* -    [06] */
 	funcIL,		/* IL   [07] */
 	NULL,		/* -    [08] */
-	NULL,		/* -    [09] */
-	funcFL,		/* FL   [10] */
+	funcFL,		/* -    [09] */
+	NULL,		/* FL   [10] */
 	funcErr,	/* ERR1 [11] */
 	funcErr		/* ERR2 [12] */
 };

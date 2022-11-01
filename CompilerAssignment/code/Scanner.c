@@ -270,10 +270,10 @@ jer_intg nextState(jer_intg state, jer_char c) {
 	* For instance, a letter should return the column for letters, etc.
  ***********************************************************
  */
-/* TO_DO: Use your column configuration */
+/* DONE: Use your column configuration */
 
 /* Adjust the logic to return next column in TT */
-/*	[A-z](0), [0-9](1),	_(2), &(3), "(4), SEOF(5), other(6) */
+/*	[A-z](0), [0-9](1),	_(2), ((3), "(4), .(5), SEOF(6), other(6) */
 
 jer_intg nextClass(jer_char c) {
 	jer_intg val = -1;
@@ -287,9 +287,12 @@ jer_intg nextClass(jer_char c) {
 	case CHRCOL4:
 		val = 4;
 		break;
+	case CHRCOL5:
+		val = 5;
+		break;
 	case CHARSEOF0:
 	case CHARSEOF255:
-		val = 5;
+		val = 6;
 		break;
 	default:
 		if (isalpha(c))
