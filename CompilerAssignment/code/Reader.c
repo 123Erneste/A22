@@ -132,9 +132,10 @@ ReaderPointer readerAddChar(ReaderPointer const readerPointer, jer_char ch) {
 	/* DONE: Reset Realocation */
 	readerPointer->flags &= RST_REL;
 	/* TO_DO: Test the inclusion of chars */
-	if (readerPointer->position.wrte * (jer_intg)sizeof(jer_char) <= readerPointer->size)
+	if (readerPointer->position.wrte * (jer_intg)sizeof(jer_char) < readerPointer->size)
 	{
 		/* TO_DO: This buffer is NOT full */
+		readerPointer->flags &= RST_REL;
 	}
 	else
 	{
@@ -143,14 +144,12 @@ ReaderPointer readerAddChar(ReaderPointer const readerPointer, jer_char ch) {
 		case MODE_FIXED:
 			return NULL;
 		case MODE_ADDIT:
-			readerPointer->flags &= SET_REL;
 			/* DONE: Adjust new size */
 			newSize = readerPointer->size + readerPointer->increment;
 			if (newSize < 0)
 				return NULL;
 			break;
 		case MODE_MULTI:
-			readerPointer->flags &= SET_REL;
 			/* DONE: Adjust new size */
 			newSize = readerPointer->size * readerPointer->increment;
 			if (newSize < 0)
@@ -164,50 +163,19 @@ ReaderPointer readerAddChar(ReaderPointer const readerPointer, jer_char ch) {
 		/* TO_DO: Defensive programming */
 		if (!tempReader)
 			return NULL;
-		/* TO_DO: Check Relocation */
 		if (tempReader != readerPointer->content)
-			readerPointer->flags &= CHK_REL;
-		readerPointer->content = tempReader;
+		{
+			/* TO_DO: Check Relocation */
+			readerPointer->flags |= SET_REL;
+			readerPointer->content = tempReader;
+		}
 		readerPointer->size = newSize;
 	}
 	/* TO_DO: Add the char */
-	if (readerPointer->position.wrte * (jer_intg)sizeof(jer_char) == readerPointer->size)
-		readerPointer->flags |= SET_FUL;
+	readerPointer->flags &= RST_EMP;
 	readerPointer->content[readerPointer->position.wrte++] = ch;
 	/* TO_DO: Updates histogram */
-	/*readerPointer->histogram[ch]++;*/
-	jer_intg length = sizeof(readerPointer->histogram) / sizeof(readerPointer->histogram[0]);
-	jer_intg n = 0;
-	jer_intg count = 0;
-	jer_intg check = 0;
-	jer_intg i = 0;
-
-
-
-	while (n < length && readerPointer->histogram[n] != 0)
-	{
-		if (readerPointer->histogram[n] == ch)
-		{
-			check = 1;
-		}
-		else
-		{
-			count++;
-		}
-		n++;
-	}
-	i = 0;
-	if (check == 0)
-	{
-		while (i <= count)
-		{
-			if (readerPointer->histogram[i] == 0)
-			{
-				readerPointer->histogram[i] = ch;
-			}
-			i++;
-		}
-	}
+	readerPointer->histogram[(jer_intg)ch]++;
 	return readerPointer;
 }
 
@@ -230,7 +198,6 @@ jer_boln readerClear(ReaderPointer const readerPointer) {
 	if (!readerPointer)
 		return JER_FALSE;
 	readerPointer->position.wrte = 0;
-	//memset(readerPointer->content, 0, sizeof(BufferReader))
 	/* TO_DO: Adjust flags original */
 	readerPointer->flags |= SET_EMP;
 	return JER_TRUE;
@@ -283,7 +250,7 @@ jer_boln readerIsFull(ReaderPointer const readerPointer) {
 	/* TO_DO: Check flag if buffer is FUL */
 	if (readerPointer->flags & CHK_FUL)
 		return JER_TRUE;
-	return NULL;
+	return JER_FALSE;
 }
 
 
@@ -361,12 +328,12 @@ jer_intg readerPrint(ReaderPointer const readerPointer) {
 	if (c < 0 || c>127)
 		return READER_ERROR;
 	/* TO_DO: Check flag if buffer EOB has achieved */
-	//if(readerPointer == CHK_END)
-	while (cont < readerPointer->position.wrte) {
-		cont++;
-		printf("%c", c);
-		c = readerGetChar(readerPointer);
-	}
+	if (readerPointer->flags == READER_TERMINATOR)
+		while (cont < readerPointer->position.wrte) {
+			cont++;
+			printf("%c", c);
+			c = readerGetChar(readerPointer);
+		}
 	return cont;
 }
 
@@ -428,8 +395,8 @@ jer_boln readerRecover(ReaderPointer const readerPointer) {
 		return JER_FALSE;
 	}
 	/* TO_DO: Recover positions */
-	readerPointer->position.mark = NULL;
-	readerPointer->position.read = NULL;
+	readerPointer->position.mark = 0;
+	readerPointer->position.read = 0;
 
 	return JER_TRUE;
 }
@@ -482,8 +449,8 @@ jer_boln readerRestore(ReaderPointer const readerPointer) {
 		return JER_FALSE;
 	}
 	/* TO_DO: Restore positions (read/mark) */
-	readerPointer->position.read = NULL;
-	readerPointer->position.mark = NULL;
+	readerPointer->position.read = 0;
+	readerPointer->position.mark = 0;
 
 	return JER_TRUE;
 }
@@ -508,7 +475,7 @@ jer_char readerGetChar(ReaderPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
 	if (!readerPointer)
 	{
-		return NULL;
+		return '\0';
 	}
 
 	/* TO_DO: Check condition to read/wrte */
@@ -522,7 +489,7 @@ jer_char readerGetChar(ReaderPointer const readerPointer) {
 	else
 	{
 		readerPointer->flags &= RST_END;
-		return readerPointer->content[readerPointer->position.read++];;
+		return readerPointer->content[readerPointer->position.read++];
 	}
 }
 
@@ -549,7 +516,7 @@ jer_char* readerGetContent(ReaderPointer const readerPointer, jer_intg pos) {
 		return NULL;
 	}
 	/* TO_DO: Return content (string) */
-	return readerPointer->content;
+	return readerPointer->content + pos;
 }
 
 
@@ -760,7 +727,7 @@ jer_intg readerShowStat(ReaderPointer const readerPointer)
 	jer_intg length = sizeof(readerPointer->histogram) / sizeof(readerPointer->histogram[0]);
 	jer_intg n = 0;
 	jer_intg count = 0;
-	while (n < length && readerPointer->histogram[n] != 0)
+	while (n < length && readerPointer->histogram[n] != '\0')
 	{
 		count++;
 		n++;

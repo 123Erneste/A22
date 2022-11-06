@@ -90,9 +90,10 @@ Main functions signatures
 (Code will be updated during next assignments)
 ------------------------------------------------------------
 */
-jer_intg mainReader  (jer_intg argc, jer_char** argv);
+jer_intg mainReader(jer_intg argc, jer_char** argv);
+jer_intg mainScanner(jer_intg argc, jer_char** argv);
+
 /*
-jer_intg mainScanner (jer_intg argc, jer_char** argv);
 jer_intg mainParser  (jer_intg argc, jer_char** argv);
 */
 jer_void printLogo();
