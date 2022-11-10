@@ -196,9 +196,6 @@ Token tokenizer(void) {
 				readerRetract(sourceBuffer);
 			}
 			return currentToken;
-		case '(':
-			currentToken.code = LPR_T;
-			return currentToken;
 		case ')':
 			currentToken.code = RPR_T;
 			return currentToken;
@@ -211,7 +208,7 @@ Token tokenizer(void) {
 				currentToken.code = LGO_T;
 				currentToken.attribute.logicalOperator = OP_AND;
 			}
-			//readerRetract(sourceBuffer);
+			readerRetract(sourceBuffer);
 			return currentToken;
 		case '|':
 			newc = readerGetChar(sourceBuffer);
@@ -219,6 +216,7 @@ Token tokenizer(void) {
 				currentToken.code = LGO_T;
 				currentToken.attribute.logicalOperator = OP_NOT;
 			}
+			readerRetract(sourceBuffer);
 			return currentToken;
 			/* Comments */
 		case '#':
