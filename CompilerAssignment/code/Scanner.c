@@ -37,7 +37,7 @@
 #include <limits.h>  /* integer types constants */
 #include <float.h>   /* floating-point types constants */
 
-/* #define NDEBUG        to suppress assert() call */
+  /* #define NDEBUG        to suppress assert() call */
 #include <assert.h>  /* assert() prototype */
 
 /* project header files */
@@ -98,7 +98,7 @@ jer_intg startScanner(ReaderPointer psc_buf) {
  *		Main function of buffer, responsible to classify a char (or sequence
  *		of chars). In the first part, a specific sequence is detected (reading
  *		from buffer). In the second part, a pattern (defined by Regular Expression)
- *		is recognized and the appropriate function is called (related to final states 
+ *		is recognized and the appropriate function is called (related to final states
  *		in the Transition Diagram).
  ***********************************************************
  */
@@ -116,10 +116,10 @@ Token tokenizer(void) {
 	jer_intg lexLength;		/* token length */
 	jer_intg i;				/* counter */
 	jer_char newc;			/* new char */
-	
+
 	while (1) { /* endless loop broken by token returns it will generate a warning */
 		c = readerGetChar(sourceBuffer);
-
+		int check = 0;
 		/* ------------------------------------------------------------------------
 			Part 1: Implementation of token driven scanner.
 			Every token is possessed by its own dedicated code
@@ -129,7 +129,7 @@ Token tokenizer(void) {
 		/* TO_DO: All patterns that do not require accepting functions */
 		switch (c) {
 
-		/* Cases for spaces */
+			/* Cases for spaces */
 		case ' ':
 		case '\t':
 		case '\f':
@@ -137,10 +137,64 @@ Token tokenizer(void) {
 		case '\n':
 			line++;
 			break;
-
-		/* Cases for symbols */
-		case ';':
-			currentToken.code = EOS_T;
+			/* Cases for symbols */
+		case '+':
+			currentToken.code = ART_T;
+			currentToken.attribute.arithmeticOperator = OP_ADD;
+			return currentToken;
+		case '-':
+			currentToken.code = ART_T;
+			currentToken.attribute.arithmeticOperator = OP_SUB;
+			return currentToken;
+		case '*':
+			currentToken.code = ART_T;
+			currentToken.attribute.arithmeticOperator = OP_MUL;
+			return currentToken;
+		case '/':
+			currentToken.code = ART_T;
+			currentToken.attribute.arithmeticOperator = OP_DIV;
+			return currentToken;
+		case '<':
+			newc = readerGetChar(sourceBuffer);
+			currentToken.code = RLO_T;
+			if (newc == '=') {
+				currentToken.attribute.relationalOperator = OP_EGT;
+			}
+			else {
+				currentToken.attribute.relationalOperator = OP_LT;
+			}
+			return currentToken;
+		case '>':
+			newc = readerGetChar(sourceBuffer);
+			currentToken.code = RLO_T;
+			if (newc == '=') {
+				currentToken.attribute.relationalOperator = OP_ELT;
+			}
+			else {
+				currentToken.attribute.relationalOperator = OP_GT;
+			}
+			return currentToken;
+		case '!':
+			newc = readerGetChar(sourceBuffer);
+			currentToken.code = RLO_T;
+			if (newc == '=') {
+				currentToken.attribute.relationalOperator = OP_NE;
+			}
+			else {
+				currentToken.code = LGO_T;
+				currentToken.attribute.logicalOperator = OP_NOT;
+			}
+			return currentToken;
+		case '=':
+			newc = readerGetChar(sourceBuffer);
+			if (newc == '=') {
+				currentToken.code = RLO_T;
+				currentToken.attribute.relationalOperator = OP_EQ;
+			}
+			else {
+				currentToken.code = ASS_T;
+				readerRetract(sourceBuffer);
+			}
 			return currentToken;
 		case '(':
 			currentToken.code = LPR_T;
@@ -148,27 +202,42 @@ Token tokenizer(void) {
 		case ')':
 			currentToken.code = RPR_T;
 			return currentToken;
-		case '{':
-			currentToken.code = LBR_T;
+		case ':':
+			currentToken.code = SMC_T;
 			return currentToken;
-		case '}':
-			currentToken.code = RBR_T;
+		case '&':
+			newc = readerGetChar(sourceBuffer);
+			if (newc == '&') {
+				currentToken.code = LGO_T;
+				currentToken.attribute.logicalOperator = OP_AND;
+			}
+			//readerRetract(sourceBuffer);
 			return currentToken;
-		/* Comments */
+		case '|':
+			newc = readerGetChar(sourceBuffer);
+			if (newc == '|') {
+				currentToken.code = LGO_T;
+				currentToken.attribute.logicalOperator = OP_NOT;
+			}
+			return currentToken;
+			/* Comments */
 		case '#':
 			newc = readerGetChar(sourceBuffer);
+			if (newc == '#')
+				check = 1;
 			do {
 				c = readerGetChar(sourceBuffer);
 				if (c == CHARSEOF0 || c == CHARSEOF255) {
 					readerRetract(sourceBuffer);
 					//return currentToken;
 				}
-				else if (c == '\n') {
-					line++;
-				}
-			} while (c != '#' && c != CHARSEOF0 && c != CHARSEOF255);
+				if (c == '#')
+					check++;
+				else if (c == '\n' && check == 0)
+					break;
+			} while (c != CHARSEOF0 && c != CHARSEOF255 && check != 3);
 			break;
-		/* Cases for END OF FILE */
+			/* Cases for END OF FILE */
 		case CHARSEOF0:
 			currentToken.code = SEOF_T;
 			currentToken.attribute.seofType = SEOF_0;
@@ -178,13 +247,13 @@ Token tokenizer(void) {
 			currentToken.attribute.seofType = SEOF_255;
 			return currentToken;
 
-		/* ------------------------------------------------------------------------
-			Part 2: Implementation of Finite State Machine (DFA) or Transition Table driven Scanner
-			Note: Part 2 must follow Part 1 to catch the illegal symbols
-			-----------------------------------------------------------------------
-		*/
+			/* ------------------------------------------------------------------------
+				Part 2: Implementation of Finite State Machine (DFA) or Transition Table driven Scanner
+				Note: Part 2 must follow Part 1 to catch the illegal symbols
+				-----------------------------------------------------------------------
+			*/
 
-		/* TO_DO: Adjust / check the logic for your language */
+			/* TO_DO: Adjust / check the logic for your language */
 
 		default: // general case
 			state = nextState(state, c);
@@ -205,9 +274,19 @@ Token tokenizer(void) {
 				fprintf(stderr, "Scanner error: Can not create buffer\n");
 				exit(1);
 			}
+			int y = sourceBuffer->position.read;
+			int t = 0;
 			readerRestore(sourceBuffer);
-			for (i = 0; i < lexLength; i++)
-				readerAddChar(lexemeBuffer, readerGetChar(sourceBuffer));
+			for (i = 0; i < sourceBuffer->position.wrte; i++) {
+				char n = readerGetChar(sourceBuffer);
+				if (i >= lexStart && i < lexEnd) {
+					t++;
+					if (state == 2 || state == 3 || state == 5 || state == 7 || state == 10) {
+						readerAddChar(lexemeBuffer, n);
+					}
+				}
+			}
+			sourceBuffer->position.read = y;
 			readerAddChar(lexemeBuffer, READER_TERMINATOR);
 			currentToken = (*finalStateTable[state])(readerGetContent(lexemeBuffer, 0));
 			readerRestore(lexemeBuffer); //xxx
@@ -270,10 +349,10 @@ jer_intg nextState(jer_intg state, jer_char c) {
 	* For instance, a letter should return the column for letters, etc.
  ***********************************************************
  */
-/* DONE: Use your column configuration */
+ /* DONE: Use your column configuration */
 
-/* Adjust the logic to return next column in TT */
-/*	[A-z](0), [0-9](1),	_(2), ((3), "(4), .(5), SEOF(6), other(6) */
+ /* Adjust the logic to return next column in TT */
+ /*	[A-z](0), [0-9](1),	_(2), ((3), "(4), .(5), SEOF(6), other(7) */
 
 jer_intg nextClass(jer_char c) {
 	jer_intg val = -1;
@@ -306,17 +385,17 @@ jer_intg nextClass(jer_char c) {
 }
 
 
- /*
-  ************************************************************
-  * Acceptance State Function IL
-  *		Function responsible to identify IL (integer literals).
-  * - It is necessary respect the limit (ex: 2-byte integer in C).
-  * - In the case of larger lexemes, error shoul be returned.
-  * - Only first ERR_LEN characters are accepted and eventually,
-  *   additional three dots (...) should be put in the output.
-  ***********************************************************
-  */
-  /* TO_DO: Adjust the function for IL */
+/*
+ ************************************************************
+ * Acceptance State Function IL
+ *		Function responsible to identify IL (integer literals).
+ * - It is necessary respect the limit (ex: 2-byte integer in C).
+ * - In the case of larger lexemes, error shoul be returned.
+ * - Only first ERR_LEN characters are accepted and eventually,
+ *   additional three dots (...) should be put in the output.
+ ***********************************************************
+ */
+ /* TO_DO: Adjust the function for IL */
 
 Token funcIL(jer_char lexeme[]) {
 	Token currentToken = { 0 };
@@ -329,6 +408,25 @@ Token funcIL(jer_char lexeme[]) {
 		if (tlong >= 0 && tlong <= SHRT_MAX) {
 			currentToken.code = INL_T;
 			currentToken.attribute.intValue = (jer_intg)tlong;
+		}
+		else {
+			currentToken = (*finalStateTable[ESNR])(lexeme);
+		}
+	}
+	return currentToken;
+}
+
+Token funcFL(jer_char lexeme[]) {
+	Token currentToken = { 0 };
+	jer_doub tlong;
+	if (lexeme[0] != '\0' && strlen(lexeme) > NUM_LEN) {
+		currentToken = (*finalStateTable[ESNR])(lexeme);
+	}
+	else {
+		tlong = atof(lexeme);
+		if (tlong >= 0 && tlong <= SHRT_MAX) {
+			currentToken.code = FL_T;
+			currentToken.attribute.floatValue = (jer_doub)tlong;
 		}
 		else {
 			currentToken = (*finalStateTable[ESNR])(lexeme);
@@ -358,16 +456,17 @@ Token funcID(jer_char lexeme[]) {
 	jer_char lastch = lexeme[length - 1];
 	jer_intg isID = JER_FALSE;
 	switch (lastch) {
-		case MNIDPREFIX:
-			currentToken.code = MNID_T;
-			isID = JER_TRUE;
-			break;
-		default:
-			// Test Keyword
-			currentToken = funcKEY(lexeme);
-			break;
+	case MNIDPREFIX:
+		currentToken.code = MNID_T;
+		isID = JER_TRUE;
+		break;
+	default:
+		// Test Keyword
+		currentToken = funcKEY(lexeme);
+		break;
 	}
 	if (isID == JER_TRUE) {
+		lexeme[length - 1] = '\0';
 		strncpy(currentToken.attribute.idLexeme, lexeme, VID_LEN);
 		currentToken.attribute.idLexeme[VID_LEN] = CHARSEOF0;
 	}
@@ -375,17 +474,18 @@ Token funcID(jer_char lexeme[]) {
 }
 
 
+
 /*
 ************************************************************
  * Acceptance State Function SL
  *		Function responsible to identify SL (string literals).
- * - The lexeme must be stored in the String Literal Table 
- *   (stringLiteralTable). You need to include the literals in 
+ * - The lexeme must be stored in the String Literal Table
+ *   (stringLiteralTable). You need to include the literals in
  *   this structure, using offsets. Remember to include \0 to
  *   separate the lexemes. Remember also to incremente the line.
  ***********************************************************
  */
-/* TO_DO: Adjust the function for SL */
+ /* TO_DO: Adjust the function for SL */
 
 Token funcSL(jer_char lexeme[]) {
 	Token currentToken = { 0 };
@@ -407,6 +507,7 @@ Token funcSL(jer_char lexeme[]) {
 		errorNumber = RTE_CODE;
 		return currentToken;
 	}
+	readerAddChar(stringLiteralTable, ' ');
 	currentToken.code = STR_T;
 	return currentToken;
 }
@@ -424,14 +525,17 @@ Token funcKEY(jer_char lexeme[]) {
 	Token currentToken = { 0 };
 	jer_intg kwindex = -1, j = 0;
 	for (j = 0; j < KWT_SIZE; j++)
-		if (!strcmp(lexeme, &keywordTable[j][0]))
+		if (strcmp(lexeme, &keywordTable[j][0]) == 0)
+		{
 			kwindex = j;
+		}
 	if (kwindex != -1) {
 		currentToken.code = KW_T;
 		currentToken.attribute.codeType = kwindex;
 	}
 	else {
-		currentToken = funcErr(lexeme);
+		currentToken.code = VAR_T;
+		strcpy(currentToken.attribute.idLexeme, lexeme);
 	}
 	return currentToken;
 }
@@ -495,18 +599,36 @@ jer_void printToken(Token t) {
 	case MNID_T:
 		printf("MNID_T\t\t%s\n", t.attribute.idLexeme);
 		break;
+	case VAR_T:
+		printf("VAR_T\t\t\t %s\n", t.attribute.idLexeme);
+		break;
+	case RLO_T:
+		printf("RLO_T\t\t\t \n");
+		break;
+	case ART_T:
+		printf("ART_T\t\t\t \n");
+		break;
+	case LGO_T:
+		printf("LGO_T\t\t\t \n");
+		break;
+	case INL_T:
+		printf("INL_T\t\t%d\n", t.attribute.intValue);
+		break;
+	case FL_T:
+		printf("FL_T\t\t%g\n", t.attribute.floatValue);
+		break;
 	case STR_T:
 		printf("STR_T\t\t%d\t ", (jer_intg)t.attribute.codeType);
 		printf("%s\n", readerGetContent(stringLiteralTable, (jer_intg)t.attribute.codeType));
 		break;
 	case LPR_T:
-		printf("LPR_T\n");
+		printf("LPR_T\t\t(\n");
 		break;
 	case RPR_T:
 		printf("RPR_T\n");
 		break;
-	case LBR_T:
-		printf("LBR_T\n");
+	case SMC_T:
+		printf("SMC_T\n");
 		break;
 	case RBR_T:
 		printf("RBR_T\n");
@@ -514,8 +636,8 @@ jer_void printToken(Token t) {
 	case KW_T:
 		printf("KW_T\t\t%s\n", keywordTable[t.attribute.codeType]);
 		break;
-	case EOS_T:
-		printf("EOS_T\n");
+	case ASS_T:
+		printf("ASS_T\n");
 		break;
 	default:
 		printf("Scanner error: invalid token code: %d\n", t.code);

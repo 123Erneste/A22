@@ -48,18 +48,23 @@ enum TOKENS {
 	STR_T,		/*  2: String literal token */
 	LPR_T,		/*  3: Left parenthesis token */
 	RPR_T,		/*  4: Right parenthesis token */
-	LBR_T,		/*  5: Left brace token */
+	SMC_T,		/*  5: Semi colon token */
 	RBR_T,		/*  6: Right brace token */
 	KW_T,		/*  7: Keyword token */
-	EOS_T,		/*  8: End of statement (semicolon) */
+	ASS_T,		/*  8: Assignment operator (=) */
 	RTE_T,		/*  9: Run-time error token */
-	INL_T,		/* 10: Run-time error token */
-	SEOF_T		/* 11: Source end-of-file token */
+	INL_T,		/* 10: Integer token */
+	FL_T,		/* 11: Float token */
+	SEOF_T,		/* 13: Source end-of-file token */
+	VAR_T,      /* 14: Variables */
+	ART_T,      /* 15: Any arithmietic exp */\
+	RLO_T,      /* 16: Any relational exp */
+	LGO_T       /* 17: Any logical exp */
 };
 
 /* TO_DO: Operators token attributes */
 typedef enum ArithmeticOperators { OP_ADD, OP_SUB, OP_MUL, OP_DIV } AriOperator;
-typedef enum RelationalOperators { OP_EQ, OP_NE, OP_GT, OP_LT } RelOperator;
+typedef enum RelationalOperators { OP_EQ, OP_NE, OP_GT, OP_LT, OP_EGT, OP_ELT } RelOperator;
 typedef enum LogicalOperators { OP_AND, OP_OR, OP_NOT } LogOperator;
 typedef enum SourceEndOfFile { SEOF_0, SEOF_255 } EofOperator;
 
@@ -80,7 +85,7 @@ typedef union TokenAttribute {
 
 /* TO_DO: Should be used if no symbol table is implemented */
 typedef struct idAttibutes {
-	boa_byte flags;			/* Flags information */
+	jer_byte flags;			/* Flags information */
 	union {
 		jer_intg intValue;				/* Integer value */
 		jer_real floatValue;			/* Float value */
@@ -119,28 +124,30 @@ typedef struct Token {
 
 /* TO_DO: Error states and illegal state */
 #define FS		100		/* Illegal state / Final state */
-#define ESWR	101		/* Error state with retract */
-#define ESNR	102		/* Error state with no retract */
+#define ESWR	10		/* Error state with retract */
+#define ESNR	11		/* Error state with no retract */
 
  /* TO_DO: State transition table definition */
-#define TABLE_COLUMNS 8
+#define TABLE_COLUMNS 7
 
 /* DONE: Transition table - type of states defined in separate table */
 static jer_intg transitionTable[][TABLE_COLUMNS] = {
-	/*         [A-z], [0-9],    _,    (,    ", 	   .,    SEOF,      other               */
-	/*          L(0),  D(1), U(2), M(3), Q(4),  P(5),    E(6),       O(7)               */
-	/* S00 */ {     1,    6, ESNR, ESNR,    4,  ESNR,	 ESWR,     ESNR}, /* NOAS        */
-	/* S01 */ {     1,    1,    1,    2,    3,     3,	 ESWR,	      3}, /* NOAS        */
-	/* S02 */ {    FS,   FS,   FS,   FS,   FS,    FS,	   FS,       FS}, /* ASNR (MNID) */
-	/* S03 */ {    FS,   FS,   FS,   FS,   FS,    FS,	   FS,       FS}, /* ASWR (KEY)  */
-	/* S04 */ {     4,    4,    4,    4,    5,     4,	 ESWR,        4}, /* NOAS        */
-	/* S05 */ {    FS,   FS,   FS,   FS,   FS,    FS,	   FS,       FS}, /* ASNR (SL)   */
-	/* S06 */ {     7,    6,    7 ,    7,   7,     8,	 ESWR,        7}, /* NOAS        */
-	/* S07 */ {    FS,   FS,   FS,   FS,   FS,    FS,	   FS,       FS}, /* ASWR (IL)   */
-	/* S08 */ {    10,    9,   10,   10,   10,    10,	 ESWR,       10}, /* NOAS        */
-	/* S09 */ {    FS,   FS,   FS,   FS,   FS,    FS,	   FS,       FS}, /* ASWR (FL)   */
-	/* S10 */ {    FS,   FS,   FS,   FS,   FS,    FS,	   FS,       FS}, /* ASWR (ES)   */
-	/* S11 */ {    FS,   FS,   FS,   FS,   FS,    FS,	   FS,       FS}, /* ASWR (ER)   */
+	/*         [A-z], [0-9],    _,    (,    ", 	   .,    SEOF,           other               */
+	/*         [A-z], [0-9],    _,    (,    ", 	   .,    SEOF,           other               */
+	/*          L(0),  D(1), U(2), M(3), Q(4),  P(5),    E(6),            O(7)               */
+	/* S00 */ {     1,    6, ESNR, ESNR,    4,  ESNR,	 /*ESWR,*/     ESNR}, /* NOAS        */
+	/* S01 */ {     1,    1,    1,    2,    3,     3,	 /*ESWR,*/ 	      3}, /* NOAS        */
+	/* S02 */ {    FS,   FS,   FS,   FS,   FS,    FS,	 /*FS,*/         FS}, /* ASNR (MNID) */
+	/* S03 */ {    FS,   FS,   FS,   FS,   FS,    FS,	 /*FS,*/         FS}, /* ASWR (KEY)  */
+	/* S04 */ {     4,    4,    4,    4,    5,     4,	 /*ESWR*/         4}, /* NOAS        */
+	/* S05 */ {    FS,   FS,   FS,   FS,   FS,    FS,	  /*FS,*/        FS}, /* ASNR (SL)   */
+	/* S06 */ {     7,    6,    7 ,    7,   7,     8,	 /*ESWR*/        7}, /* NOAS        */
+	/* S07 */ {    FS,   FS,   FS,   FS,   FS,    FS,	 /*FS,*/          FS}, /* ASWR (IL)   */
+	/* S08 */ {  ESNR,    9, ESNR, ESNR, ESNR,  ESNR,	 /*ESWR*/      ESNR}, /* NOAS        */
+	/* S09 */ {    10,    9,   10,   10,   10,    10,	 /*ESWR*/        10}, /* NOAS        */
+	/* S10 */ {    FS,   FS,   FS,   FS,   FS,    FS,	 /*FS,*/         FS}, /* ASNR (FL)   */
+	/* S11 */ {    FS,   FS,   FS,   FS,   FS,    FS,	 /*FS,*/         FS}, /* ASNR (ES)   */
+	/* S12 */ {    FS,   FS,   FS,   FS,   FS,    FS,	 /*FS,*/         FS}, /* ASWR (ER)   */
 
 };
 
@@ -152,7 +159,7 @@ static jer_intg transitionTable[][TABLE_COLUMNS] = {
 /* DONE: Define list of acceptable states */
 static jer_intg stateType[] =
 {
-    NOFS, /* 00 */
+	NOFS, /* 00 */
 	NOFS, /* 01 */
 	FSNR, /* 02 (MID) - Methods */
 	FSWR, /* 03 (KEY) */
@@ -161,9 +168,10 @@ static jer_intg stateType[] =
 	NOFS, /* 06 */
 	FSWR, /* 07 (IL) */
 	NOFS, /* 08 */
-	FSNR, /* 09 (FL) */
-	FSNR, /* 10 (Err1 - no retract) */
-	FSWR  /* 11 (Err2 - retract) */
+	NOFS, /* 09 */
+	FSNR, /* 10 (FL) */
+	FSNR, /* 11 (Err1 - no retract) */
+	FSWR  /* 12 (Err2 - retract) */
 };
 
 /*
@@ -191,8 +199,9 @@ Token funcSL(jer_char lexeme[]);
 Token funcID(jer_char lexeme[]);
 Token funcKEY(jer_char lexeme[]);
 Token funcIL(jer_char lexeme[]);
-//Token funcFL(jer_char lexeme[]);
+Token funcFL(jer_char lexeme[]);
 Token funcErr(jer_char lexeme[]);
+
 /*
  * Accepting function (action) callback table (array) definition
  * If you do not want to use the typedef, the equvalent declaration is:
@@ -209,8 +218,8 @@ static PTR_ACCFUN finalStateTable[] = {
 	NULL,		/* -    [06] */
 	funcIL,		/* IL   [07] */
 	NULL,		/* -    [08] */
-	funcFL,		/* -    [09] */
-	NULL,		/* FL   [10] */
+	NULL,		/* -    [09] */
+	funcFL,		/* FL   [10] */
 	funcErr,	/* ERR1 [11] */
 	funcErr		/* ERR2 [12] */
 };
@@ -222,11 +231,11 @@ Language keywords
 */
 
 /* TO_DO: Define the number of Keywords from the language */
-#define KWT_SIZE 32
+#define KWT_SIZE  31
 
 /* TO_DO: Define the list of keywords */
 static jer_char* keywordTable[KWT_SIZE] = {
-	"break,
+	"break",
 	"return",
 	"false",
 	"true",
