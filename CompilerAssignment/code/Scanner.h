@@ -59,7 +59,8 @@ enum TOKENS {
 	VAR_T,      /* 14: Variables */
 	ART_T,      /* 15: Any arithmietic exp */\
 	RLO_T,      /* 16: Any relational exp */
-	LGO_T       /* 17: Any logical exp */
+	LGO_T,       /* 17: Any logical exp */
+	COM_T       /* 17: Any logical exp */
 };
 
 /* TO_DO: Operators token attributes */
@@ -141,8 +142,8 @@ static jer_intg transitionTable[][TABLE_COLUMNS] = {
 	/* S03 */ {    FS,   FS,   FS,   FS,   FS,    FS,	 /*FS,*/         FS}, /* ASWR (KEY)  */
 	/* S04 */ {     4,    4,    4,    4,    5,     4,	 /*ESWR*/         4}, /* NOAS        */
 	/* S05 */ {    FS,   FS,   FS,   FS,   FS,    FS,	  /*FS,*/        FS}, /* ASNR (SL)   */
-	/* S06 */ {     7,    6,    7 ,    7,   7,     8,	 /*ESWR*/        7}, /* NOAS        */
-	/* S07 */ {    FS,   FS,   FS,   FS,   FS,    FS,	 /*FS,*/          FS}, /* ASWR (IL)   */
+	/* S06 */ {     7,    6,    7 ,    7,   7,     8,	 /*ESWR*/         7}, /* NOAS        */
+	/* S07 */ {    FS,   FS,   FS,   FS,   FS,    FS,	 /*FS,*/         FS}, /* ASWR (IL)   */
 	/* S08 */ {  ESNR,    9, ESNR, ESNR, ESNR,  ESNR,	 /*ESWR*/      ESNR}, /* NOAS        */
 	/* S09 */ {    10,    9,   10,   10,   10,    10,	 /*ESWR*/        10}, /* NOAS        */
 	/* S10 */ {    FS,   FS,   FS,   FS,   FS,    FS,	 /*FS,*/         FS}, /* ASNR (FL)   */

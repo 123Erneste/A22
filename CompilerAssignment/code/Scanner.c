@@ -199,8 +199,14 @@ Token tokenizer(void) {
 		case ')':
 			currentToken.code = RPR_T;
 			return currentToken;
+		case '(':
+			currentToken.code = LPR_T;
+			return currentToken;
 		case ':':
 			currentToken.code = SMC_T;
+			return currentToken;
+		case ',':
+			currentToken.code = COM_T;
 			return currentToken;
 		case '&':
 			newc = readerGetChar(sourceBuffer);
@@ -417,10 +423,7 @@ Token funcIL(jer_char lexeme[]) {
 Token funcFL(jer_char lexeme[]) {
 	Token currentToken = { 0 };
 	jer_doub tlong;
-	if (lexeme[0] != '\0' && strlen(lexeme) > NUM_LEN) {
-		currentToken = (*finalStateTable[ESNR])(lexeme);
-	}
-	else {
+	
 		tlong = atof(lexeme);
 		if (tlong >= 0 && tlong <= SHRT_MAX) {
 			currentToken.code = FL_T;
@@ -428,7 +431,7 @@ Token funcFL(jer_char lexeme[]) {
 		}
 		else {
 			currentToken = (*finalStateTable[ESNR])(lexeme);
-		}
+		
 	}
 	return currentToken;
 }
@@ -627,6 +630,9 @@ jer_void printToken(Token t) {
 		break;
 	case SMC_T:
 		printf("SMC_T\n");
+		break;
+	case COM_T:
+		printf("COM_T\n");
 		break;
 	case RBR_T:
 		printf("RBR_T\n");
