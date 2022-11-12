@@ -2,7 +2,7 @@
    Volume of a sphere ##
 def main():
    PI = 3.14
-   r = int(input('Write a number:'))
+   r = int(input("Write a number:"))
    Vol = 4.0 / 3.0 * PI * (r * r * r)
    print(Vol)
 main()

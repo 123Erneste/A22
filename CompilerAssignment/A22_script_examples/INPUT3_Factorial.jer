@@ -5,10 +5,10 @@ Testing numbers (ex: factorial)
 def main():
   f=1
   i=1
-  n = int(input('Write a number:'))
+  n = int(input("Write a number:"))
   while (i<n+1) :
      f = f * i
      i = i + 1
-  print('Factorial:',f)
+  print("Factorial:",f)
 main()
  
