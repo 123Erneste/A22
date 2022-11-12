@@ -2,17 +2,16 @@
 :: SCRIPT A22 - CST8152 - Fall 2022
 
 CLS
-SET COMPILER=Boa.exe
+SET COMPILER=Projerct1.exe
 
 SET FILE1=INPUT0_Empty
 SET FILE2=INPUT1_Hello
 SET FILE3=INPUT2_Volume
 SET FILE4=INPUT3_Factorial
 SET FILE5=INPUT4_Datatypes
-SET FILE6=INPUT5_General
 
 SET ASSIGNMENT=A22
-SET EXTENSION=boa
+SET EXTENSION=jer
 SET OUTPUT=out
 SET ERROR=err
 
@@ -25,7 +24,7 @@ SET PARAM=S
 @echo off
 ECHO " _________________________________ "
 ECHO "|                                 |"
-ECHO "| ....... 'BOA' LANGUAGE ........ |"
+ECHO "| ....... 'JER' LANGUAGE ........ |"
 ECHO "|     __    __    __    __        |"
 ECHO "|    /  \  /  \  /  \  /  \       |"
 ECHO "| __/  __\/  __\/  __\/  __\__    |"
