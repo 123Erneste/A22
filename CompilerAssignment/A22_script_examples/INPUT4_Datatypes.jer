@@ -1,0 +1,10 @@
+##
+JER Example
+##
+def main():
+	FoundationYear = -7000
+	Area = 492
+	HDI=0.871
+	CountryName = "Bulgary"
+	print(CountryName)
+main()
