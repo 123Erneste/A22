@@ -423,7 +423,11 @@ Token funcIL(jer_char lexeme[]) {
 Token funcFL(jer_char lexeme[]) {
 	Token currentToken = { 0 };
 	jer_doub tlong;
-	
+
+	if ( strlen(lexeme) > NUM_LEN) {
+		currentToken = (*finalStateTable[ESNR])(lexeme);
+	}
+	else {
 		tlong = atof(lexeme);
 		if (tlong >= 0 && tlong <= SHRT_MAX) {
 			currentToken.code = FL_T;
@@ -431,7 +435,7 @@ Token funcFL(jer_char lexeme[]) {
 		}
 		else {
 			currentToken = (*finalStateTable[ESNR])(lexeme);
-		
+		}
 	}
 	return currentToken;
 }

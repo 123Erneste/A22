@@ -170,7 +170,7 @@ static jer_intg stateType[] =
 	FSWR, /* 07 (IL) */
 	NOFS, /* 08 */
 	NOFS, /* 09 */
-	FSNR, /* 10 (FL) */
+	FSWR, /* 10 (FL) */
 	FSNR, /* 11 (Err1 - no retract) */
 	FSWR  /* 12 (Err2 - retract) */
 };
